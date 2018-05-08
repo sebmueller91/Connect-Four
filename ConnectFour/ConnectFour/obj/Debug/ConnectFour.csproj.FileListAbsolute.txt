@@ -1,0 +1,15 @@
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\bin\Debug\ConnectFour.exe.config
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\bin\Debug\ConnectFour.exe
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\bin\Debug\ConnectFour.pdb
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.csprojResolveAssemblyReference.cache
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\MainWindow.g.cs
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\App.g.cs
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour_MarkupCompile.cache
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour_MarkupCompile.lref
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\MainWindow.baml
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.g.resources
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.Properties.Resources.resources
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.csproj.GenerateResource.cache
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.csproj.CoreCompileInputs.cache
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.exe
+c:\users\sebmu\source\repos\ConnectFour\ConnectFour\obj\Debug\ConnectFour.pdb

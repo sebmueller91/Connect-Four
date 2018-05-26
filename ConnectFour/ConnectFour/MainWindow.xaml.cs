@@ -22,6 +22,7 @@ namespace ConnectFour
     /// </summary>
     public partial class MainWindow : Window
     {
+        private const double decayFactor = 0.99;
         private const Player AI = Player.Red;
 
         private Player[,] States { get; set; }
@@ -41,10 +42,11 @@ namespace ConnectFour
                 if (value != m_NextMove)
                 {
                     m_NextMove = value;
-                    //if (m_NextMove == AI && GetWinner(States) == State.Empty)
-                    //{
-                    //    DoAIMove();
-                    //}
+                    Player winner;
+                    if (m_NextMove == AI && IsFinished(States, out winner) == false)
+                    {
+                        DoAIMove();
+                    }
                 }
             }
         }
@@ -117,9 +119,10 @@ namespace ConnectFour
             int col = buttonNo % MyGrid.Columns;
 
             List<Button> buttons;
-            if (GetWinner(States, out buttons) == Player.Empty && DoMove(col))
-            {                
-                GetWinner(States, out buttons);
+            if (GetWinner(States, out buttons) == Player.Empty && DoMove(col, States, NextMove))
+            {
+                //GetWinner(States, out buttons);
+                NextMove = GetInvPlayer(NextMove);
                 MarkWinner(buttons);
             }
         }
@@ -132,7 +135,7 @@ namespace ConnectFour
             }
         }
 
-        private bool DoMove(int col)
+        private bool DoMove(int col, Player[,] curStates, Player player)
         {
             if (col < 0 || col >= MyGrid.Columns)
             {
@@ -141,11 +144,11 @@ namespace ConnectFour
 
             for (int i = MyGrid.Rows - 1; i >= 0; i--)
             {
-                if (States[i, col] == Player.Empty)
+                if (curStates[i, col] == Player.Empty)
                 {
-                    States[i, col] = NextMove;
-                    Buttons[i, col].Foreground = (NextMove == Player.Red) ? Brushes.Red : Brushes.Yellow;
-                    NextMove = GetInvPlayer(NextMove);
+                    curStates[i, col] = player;
+                    Buttons[i, col].Foreground = (player == Player.Red) ? Brushes.Red : Brushes.Yellow;
+                    //nextMove = GetInvPlayer(player);
                     return true;
                 }
             }
@@ -397,5 +400,155 @@ namespace ConnectFour
         {
 
         }
+
+
+        #region AI
+        private void DoAIMove()
+        {
+            int col;
+            Minimax(States, NextMove, out col, 1.0, double.MinValue, double.MaxValue);
+            DoMove(col, States, AI);
+        }
+
+        private double Minimax(Player[,] curStates, Player curPlayer, out int col, double rewardFactor, double alpha, double beta)
+        {
+            Player winner;
+            if (IsFinished(curStates, out winner))
+            {
+                col = -1;
+                return rewardFactor * Minimax_Reward_Function(winner);
+            }
+            else
+            {
+                List<int> possibleCols = new List<int>();
+                for (int i = 0; i < MyGrid.Columns; i++)
+                {
+                    if (curStates[0, i] == Player.Empty)
+                        possibleCols.Add(i);
+                }
+
+                if (curPlayer == AI) // Maximize
+                {
+                    double rMax = alpha;// double.MinValue;
+                    List<int> cols = new List<int>();
+                    foreach (var curCol in possibleCols)
+                    {
+                        Player[,] newStates = CopyStates(curStates);
+                        DoMove(curCol, newStates, curPlayer);                        
+
+                        int bestCol;
+                        double r = Minimax(newStates, GetInvPlayer(curPlayer), out bestCol, decayFactor*rewardFactor, rMax, beta);
+
+                        if (r > rMax)
+                        {
+                            rMax = r;
+                            cols.Clear();
+                            cols.Add(curCol);
+                        }
+                        else if (r == rMax)
+                        {
+                            cols.Add(curCol);
+                        }
+
+                        if (rMax >= beta)
+                            break;
+                    }
+
+                    col = GetRandomCell(cols);
+                    return rMax;
+                }
+                else // Minimize
+                {
+                    double rMin = beta;// double.MaxValue;
+                    List<int> cols = new List<int>();
+                    foreach (var curCol in possibleCols)
+                    {
+
+                        Player[,] newStates = CopyStates(curStates);
+                        DoMove(curCol, newStates, curPlayer);
+
+                        int bestCol;
+                        double r = Minimax(newStates, GetInvPlayer(curPlayer), out bestCol, decayFactor * rewardFactor, alpha, rMin);
+
+                        if (r < rMin)
+                        {
+                            rMin = r;
+                            cols.Clear();
+                            cols.Add(curCol);
+                        }
+                        else if (r == rMin)
+                        {
+                            cols.Add(curCol);
+                        }
+
+                        if (rMin <= alpha)
+                            break;
+                    }
+
+                    col = GetRandomCell(cols);
+                    return rMin;
+                }
+            }
+        }
+
+        private double Minimax_Reward_Function(Player winner)
+        {
+            if (winner == AI)
+                return 100.0;
+            else if (GetInvPlayer(AI) == winner)
+                return -100.0;
+            else
+                return 0.0;
+        }
+        #endregion AI
+
+        #region Helper
+        private bool IsFinished(Player[,] curStates, out Player winner)
+        {
+            List<Button> buttons;
+            winner = GetWinner(curStates, out buttons);
+
+            foreach (var cell in curStates)
+            {
+                if (cell == Player.Empty)
+                {
+                    return false;
+                }
+            }
+
+            if (winner != Player.Empty)
+                return true;
+
+            return false;
+        }
+
+        private Player[,] CopyStates(Player[,] states)
+        {
+            Player[,] newStates = new Player[MyGrid.Rows, MyGrid.Columns];
+
+            for (int i = 0; i < MyGrid.Rows; i++)
+            {
+                for (int j = 0; j < MyGrid.Columns; j++)
+                {
+                    newStates[i, j] = states[i, j];
+                }
+            }
+
+            return newStates;
+        }
+
+        private int GetRandomCell(List<int> cols)
+        {
+            if (cols.Count == 0)
+            {
+                return -1;
+            }
+            else
+            {
+                int randPos = rand.Next(0, cols.Count);
+                return cols[randPos];
+            }
+        }
+        #endregion Helper
     }
 }
